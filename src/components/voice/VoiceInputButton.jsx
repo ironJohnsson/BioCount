@@ -132,3 +132,4 @@ export default function VoiceInputButton({ onResult, mode = 'number', placeholde
     </div>
   );
 }
+

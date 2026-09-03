@@ -78,3 +78,4 @@ export function triggerHaptic(durationMs = 18) {
     }
   }
 }
+

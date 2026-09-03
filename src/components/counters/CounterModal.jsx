@@ -155,3 +155,4 @@ export default function CounterModal({ isOpen, onClose, onSave, editingCounter }
     </div>
   );
 }
+

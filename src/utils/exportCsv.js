@@ -90,3 +90,4 @@ export function exportCountersToCsv(counters, separator = ';') {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+

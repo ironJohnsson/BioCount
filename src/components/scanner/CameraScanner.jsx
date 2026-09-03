@@ -339,3 +339,4 @@ export default function CameraScanner({ onNumberDetected, onApplyToForm, onClose
     </div>
   );
 }
+

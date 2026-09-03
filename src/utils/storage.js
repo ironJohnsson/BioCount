@@ -140,3 +140,4 @@ export function saveSettings(settings) {
     console.error('Erro ao salvar configurações:', e);
   }
 }
+
