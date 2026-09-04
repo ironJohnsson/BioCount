@@ -28,10 +28,24 @@ export const ROLE_LABELS = {
   }
 };
 
-// Conta mestre de Professor concedida via código/desenvolvedor
+// Contas mestre de Professor concedidas via código/desenvolvedor
 export const DEFAULT_MASTER_USERS = [
   {
     id: 'usr-prof',
+    name: 'Rodrigo Johnsson',
+    email: 'r.johnsson@gmail.com',
+    role: USER_ROLES.PROFESSOR,
+    password: 'senha123'
+  },
+  {
+    id: 'usr-prof-01',
+    name: 'Elizabeth Neves',
+    email: 'elizabeth.neves@gmail.com',
+    role: USER_ROLES.PROFESSOR,
+    password: 'senha123'
+  },
+  {
+    id: 'usr-prof-master',
     name: 'Professor Responsável',
     email: 'professor@biocount.lab',
     role: USER_ROLES.PROFESSOR,
@@ -45,15 +59,24 @@ const USERS_STORAGE_KEY = 'biocount_all_users_v3';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  // Lista de todos os usuários
+  // Lista de todos os usuários (sempre mescla as contas mestres para garantir acesso imediato)
   const [users, setUsers] = useState(() => {
     try {
       const saved = localStorage.getItem(USERS_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      const parsed = saved ? JSON.parse(saved) : [];
+      const merged = [...DEFAULT_MASTER_USERS];
+
+      if (Array.isArray(parsed)) {
+        parsed.forEach(p => {
+          const idx = merged.findIndex(m => m.email.toLowerCase() === p.email.toLowerCase());
+          if (idx >= 0) {
+            merged[idx] = { ...merged[idx], ...p };
+          } else {
+            merged.push(p);
+          }
+        });
       }
-      return DEFAULT_MASTER_USERS;
+      return merged;
     } catch {
       return DEFAULT_MASTER_USERS;
     }
@@ -103,6 +126,31 @@ export function AuthProvider({ children }) {
       }
     }
   }, [users, currentUser]);
+
+  // Sincronizar usuários da API backend (Turso/SQLite) ao iniciar
+  useEffect(() => {
+    fetch('/api/users')
+      .then(res => (res.ok ? res.json() : null))
+      .then(apiUsers => {
+        if (Array.isArray(apiUsers) && apiUsers.length > 0) {
+          setUsers(prev => {
+            const merged = [...prev];
+            apiUsers.forEach(au => {
+              const idx = merged.findIndex(m => m.email.toLowerCase() === au.email.toLowerCase());
+              if (idx >= 0) {
+                merged[idx] = { ...merged[idx], ...au };
+              } else {
+                merged.push(au);
+              }
+            });
+            return merged;
+          });
+        }
+      })
+      .catch(() => {
+        // Fallback silencioso offline
+      });
+  }, []);
 
   // Função de Login
   const login = async (emailOrUsername, password) => {

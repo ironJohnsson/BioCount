@@ -96,19 +96,54 @@ export async function initDatabase() {
       );
     `);
 
-    // Inserir conta mestre inicial de Professor (concedida via código pelo desenvolvedor)
-    const userCheck = await db.execute('SELECT COUNT(*) as count FROM users');
-    const defaultPasswordHash = hashPassword('admin');
+    // Garantir que as contas mestres de Professor concedidas pelo desenvolvedor existam
+    const masterProfessors = [
+      {
+        id: 'usr-prof-rodrigo',
+        name: 'Rodrigo Johnsson',
+        email: 'r.johnsson@gmail.com',
+        role: 'professor',
+        password: 'senha123'
+      },
+      {
+        id: 'usr-prof-elizabeth',
+        name: 'Elizabeth Neves',
+        email: 'elizabeth.neves@gmail.com',
+        role: 'professor',
+        password: 'senha123'
+      },
+      {
+        id: 'usr-prof-master',
+        name: 'Professor Responsável',
+        email: 'professor@biocount.lab',
+        role: 'professor',
+        password: 'admin'
+      }
+    ];
 
-    if (userCheck.rows[0].count === 0) {
-      console.log('[BioCount DB] Criando conta inicial de Professor (professor@biocount.lab / senha: admin)...');
-      await db.execute({
-        sql: `INSERT INTO users (id, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)`,
-        args: ['usr-prof', 'Professor Responsável', 'professor@biocount.lab', defaultPasswordHash, 'professor']
+    for (const prof of masterProfessors) {
+      const pHash = hashPassword(prof.password);
+      const cleanEmail = prof.email.toLowerCase();
+
+      const existing = await db.execute({
+        sql: 'SELECT id FROM users WHERE LOWER(email) = ?',
+        args: [cleanEmail]
       });
+
+      if (existing.rows.length > 0) {
+        await db.execute({
+          sql: `UPDATE users SET name = ?, role = 'professor', password_hash = ? WHERE LOWER(email) = ?`,
+          args: [prof.name, pHash, cleanEmail]
+        });
+      } else {
+        await db.execute({
+          sql: `INSERT OR REPLACE INTO users (id, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)`,
+          args: [prof.id, prof.name, cleanEmail, pHash, prof.role]
+        });
+      }
     }
 
-    console.log('[BioCount DB] Tabelas e índices verificados com sucesso!');
+    console.log('[BioCount DB] Tabelas e contas mestres verificadas com sucesso!');
   } catch (error) {
     console.error('[BioCount DB] Erro na inicialização do banco:', error);
   }
