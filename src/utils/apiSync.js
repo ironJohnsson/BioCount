@@ -11,6 +11,30 @@ export async function checkBackendHealth() {
   }
 }
 
+export async function fetchOfficialSpecimensFromApi() {
+  try {
+    const res = await fetch(`${API_BASE}/specimens/official`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    console.warn('[BioCount API] Backend offline, utilizando dados locais da Planilha Oficial.', e);
+  }
+  return null;
+}
+
+export async function fetchRepositorySpecimensFromApi() {
+  try {
+    const res = await fetch(`${API_BASE}/specimens/repository`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    console.warn('[BioCount API] Backend offline, utilizando dados locais do Repositório.', e);
+  }
+  return null;
+}
+
 export async function fetchSpecimensFromApi() {
   try {
     const res = await fetch(`${API_BASE}/specimens`);
@@ -30,9 +54,66 @@ export async function saveSpecimenToApi(specimen) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(specimen)
     });
+    if (res.ok) {
+      return await res.json();
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export async function promoteSpecimenToOfficialApi(id, verifierData) {
+  try {
+    const res = await fetch(`${API_BASE}/specimens/promote/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(verifierData)
+    });
+    const data = await res.json();
+    if (res.status === 409) {
+      return { conflict: true, ...data };
+    }
+    return { success: res.ok, ...data };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function resolveConflictApi(payload) {
+  try {
+    const res = await fetch(`${API_BASE}/specimens/resolve-conflict`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function deleteSpecimenFromApi(id) {
+  try {
+    const res = await fetch(`${API_BASE}/specimens/${id}`, {
+      method: 'DELETE'
+    });
     return res.ok;
   } catch {
     return false;
+  }
+}
+
+export async function importOfficialSpecimensBatchApi(specimens) {
+  try {
+    const res = await fetch(`${API_BASE}/specimens/batch-official`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ specimens })
+    });
+    return await res.json();
+  } catch (e) {
+    return { success: false, error: e.message };
   }
 }
 

@@ -12,6 +12,7 @@ import {
   FileEdit,
   User,
   Upload,
+  Radio,
   X
 } from 'lucide-react';
 import { exportSpecimensToCsv, parseCsvToSpecimens } from '../../utils/exportCsv';
@@ -99,7 +100,7 @@ export default function SpecimenTable({
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
         const text = event.target?.result;
         const parsed = parseCsvToSpecimens(text);
@@ -109,9 +110,10 @@ export default function SpecimenTable({
         }
 
         if (onImportSpecimens) {
-          onImportSpecimens(parsed);
+          await onImportSpecimens(parsed);
+        } else {
+          alert(`${parsed.length} registro(s) da planilha importados com sucesso!`);
         }
-        alert(`${parsed.length} registro(s) da planilha importados com sucesso!`);
       } catch (err) {
         console.error('Erro ao importar CSV:', err);
         alert('Ocorreu um erro ao processar a planilha CSV: ' + err.message);
@@ -134,6 +136,24 @@ export default function SpecimenTable({
         accept=".csv,text/csv"
         style={{ display: 'none' }}
       />
+
+      {/* Banner da Planilha Oficial Consolidada */}
+      <div className="official-spreadsheet-header-banner">
+        <div className="official-banner-left">
+          <div className="badge-official-collection">
+            <CheckCircle2 size={16} className="text-emerald" />
+            <strong>Planilha Oficial da Coleção</strong>
+          </div>
+          <span className="official-banner-subtitle">
+            Dados consolidados e auditados • Acesso simultâneo para todo o laboratório sem conflitos
+          </span>
+        </div>
+        <div className="official-banner-right">
+          <span className="live-cloud-indicator">
+            <Radio size={14} className="pulse-icon text-emerald" /> Banco em Nuvem Ativo
+          </span>
+        </div>
+      </div>
 
       {/* Barra Superior da Planilha */}
       <div className="table-top-bar">

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "server": "node server/index.js",
     "start": "node server/index.js",
-    "add:professor": "node server/scripts/add-professor.js"
+    "add:professor": "node server/scripts/add-professor.js",
+    "load:spreadsheet": "node server/scripts/import-spreadsheet.js"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",

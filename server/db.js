@@ -69,9 +69,25 @@ export async function initDatabase() {
         verified_by_id TEXT,
         verified_at TEXT,
         verification_notes TEXT,
+        in_repository INTEGER NOT NULL DEFAULT 1,
+        version INTEGER NOT NULL DEFAULT 1,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // Migrações graduais caso tabela já exista no Turso ou SQLite
+    try {
+      await db.execute(`ALTER TABLE specimens ADD COLUMN in_repository INTEGER NOT NULL DEFAULT 1`);
+    } catch {}
+
+    try {
+      await db.execute(`ALTER TABLE specimens ADD COLUMN version INTEGER NOT NULL DEFAULT 1`);
+    } catch {}
+
+    // Garantir que espécimes já verificados constem na Planilha Oficial
+    try {
+      await db.execute(`UPDATE specimens SET in_repository = 0 WHERE status = 'verificado'`);
+    } catch {}
 
     // Tabela de Presença em Tempo Real (Usuários Online)
     await db.execute(`

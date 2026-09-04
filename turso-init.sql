@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS specimens (
   verified_by_id TEXT,
   verified_at TEXT,
   verification_notes TEXT,
+  in_repository INTEGER NOT NULL DEFAULT 1,
+  version INTEGER NOT NULL DEFAULT 1,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

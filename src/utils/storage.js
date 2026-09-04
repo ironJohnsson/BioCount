@@ -42,6 +42,59 @@ export function saveCounters(counters) {
   }
 }
 
+const OFFICIAL_SPECIMENS_KEY = 'biocount_official_specimens_v1';
+const REPOSITORY_SPECIMENS_KEY = 'biocount_repository_specimens_v1';
+
+export function loadOfficialSpecimens() {
+  try {
+    const raw = localStorage.getItem(OFFICIAL_SPECIMENS_KEY);
+    if (raw) return JSON.parse(raw);
+    // Migrar legado se houver
+    const legacy = localStorage.getItem(SPECIMENS_KEY);
+    if (legacy) {
+      const list = JSON.parse(legacy);
+      return list.filter(s => s.status === 'verificado' && !s.inRepository);
+    }
+    return [];
+  } catch (e) {
+    console.error('Erro ao carregar planilha oficial local:', e);
+    return [];
+  }
+}
+
+export function saveOfficialSpecimens(specimens) {
+  try {
+    localStorage.setItem(OFFICIAL_SPECIMENS_KEY, JSON.stringify(specimens));
+  } catch (e) {
+    console.error('Erro ao salvar planilha oficial local:', e);
+  }
+}
+
+export function loadRepositorySpecimens() {
+  try {
+    const raw = localStorage.getItem(REPOSITORY_SPECIMENS_KEY);
+    if (raw) return JSON.parse(raw);
+    // Migrar legado se houver
+    const legacy = localStorage.getItem(SPECIMENS_KEY);
+    if (legacy) {
+      const list = JSON.parse(legacy);
+      return list.filter(s => s.status !== 'verificado' || s.inRepository);
+    }
+    return [];
+  } catch (e) {
+    console.error('Erro ao carregar repositório local:', e);
+    return [];
+  }
+}
+
+export function saveRepositorySpecimens(specimens) {
+  try {
+    localStorage.setItem(REPOSITORY_SPECIMENS_KEY, JSON.stringify(specimens));
+  } catch (e) {
+    console.error('Erro ao salvar repositório local:', e);
+  }
+}
+
 export function loadSpecimens() {
   try {
     const raw = localStorage.getItem(SPECIMENS_KEY);

@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Layers,
   TableProperties,
+  Inbox,
   Bug,
   FileSpreadsheet,
   Users,
@@ -17,6 +18,7 @@ export default function Header({
   setActiveTab,
   totalCounters,
   totalSpecimens,
+  totalRepository = 0,
   onQuickExport,
   onOpenUserModal,
   onOpenAdminModal,
@@ -42,11 +44,11 @@ export default function Header({
             <h1 className="brand-title">BioCount</h1>
             <span className="brand-tag">Coleções Biológicas</span>
           </div>
-          <p className="brand-tagline">Catalogação em Planilha & Contagem Taxonômica</p>
+          <p className="brand-tagline">Repositório de Triagem & Planilha Oficial Colaborativa</p>
         </div>
       </div>
 
-      {/* Navegação por Abas Principais (Contador e Planilha) */}
+      {/* Navegação por Abas Principais (Contador, Repositório e Planilha Oficial) */}
       <nav className="header-nav">
         <button
           className={`nav-tab ${activeTab === 'counters' ? 'active' : ''}`}
@@ -58,11 +60,22 @@ export default function Header({
         </button>
 
         <button
-          className={`nav-tab ${activeTab === 'catalog' ? 'active' : ''}`}
-          onClick={() => setActiveTab('catalog')}
+          className={`nav-tab nav-tab-repo ${activeTab === 'repository' ? 'active' : ''}`}
+          onClick={() => setActiveTab('repository')}
+          title="Área de quarentena: rascunhos e amostras aguardando validação"
+        >
+          <Inbox size={18} />
+          <span>Repositório (Triagem)</span>
+          {totalRepository > 0 && <span className="tab-pill tab-pill-warning">{totalRepository}</span>}
+        </button>
+
+        <button
+          className={`nav-tab ${activeTab === 'official' || activeTab === 'catalog' ? 'active' : ''}`}
+          onClick={() => setActiveTab('official')}
+          title="Planilha Oficial da Coleção: apenas dados consolidados e auditados"
         >
           <TableProperties size={18} />
-          <span>Catalogação & Planilha</span>
+          <span>Planilha Oficial</span>
           {totalSpecimens > 0 && <span className="tab-pill">{totalSpecimens}</span>}
         </button>
       </nav>
