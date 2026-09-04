@@ -1,13 +1,36 @@
 import React from 'react';
-import { Layers, TableProperties, Camera, Bug, FileSpreadsheet, Sparkles } from 'lucide-react';
+import {
+  Layers,
+  TableProperties,
+  Bug,
+  FileSpreadsheet,
+  Users,
+  Shield,
+  GraduationCap,
+  Clock,
+  LogOut
+} from 'lucide-react';
+import { useAuth, ROLE_LABELS } from '../../context/AuthContext';
 
 export default function Header({
   activeTab,
   setActiveTab,
   totalCounters,
   totalSpecimens,
-  onQuickExport
+  onQuickExport,
+  onOpenUserModal,
+  onOpenAdminModal,
+  onToggleOnlineDrawer
 }) {
+  const { currentUser, isProfessor, logout } = useAuth();
+  const roleInfo = ROLE_LABELS[currentUser?.role] || ROLE_LABELS.trainee;
+
+  const handleLogout = () => {
+    if (window.confirm(`Deseja sair da conta "${currentUser?.name}"?`)) {
+      logout();
+    }
+  };
+
   return (
     <header className="app-header">
       <div className="header-brand">
@@ -19,11 +42,11 @@ export default function Header({
             <h1 className="brand-title">BioCount</h1>
             <span className="brand-tag">Coleções Biológicas</span>
           </div>
-          <p className="brand-tagline">Contador de Cliques, Scanner OCR & Catalogação em Planilha</p>
+          <p className="brand-tagline">Catalogação em Planilha & Contagem Taxonômica</p>
         </div>
       </div>
 
-      {/* Navegação por Abas */}
+      {/* Navegação por Abas Principais (Contador e Planilha) */}
       <nav className="header-nav">
         <button
           className={`nav-tab ${activeTab === 'counters' ? 'active' : ''}`}
@@ -42,19 +65,23 @@ export default function Header({
           <span>Catalogação & Planilha</span>
           {totalSpecimens > 0 && <span className="tab-pill">{totalSpecimens}</span>}
         </button>
-
-        <button
-          className={`nav-tab ${activeTab === 'scanner' ? 'active' : ''}`}
-          onClick={() => setActiveTab('scanner')}
-        >
-          <Camera size={18} />
-          <span>Scanner OCR</span>
-          <span className="tab-badge-new">Câmera</span>
-        </button>
       </nav>
 
-      {/* Ação Rápida */}
+      {/* Ações Rápidas & Usuário */}
       <div className="header-actions">
+        {/* Botão de Usuários Online & Colaboração em Tempo Real */}
+        <button
+          type="button"
+          onClick={onToggleOnlineDrawer}
+          className="btn-header-online"
+          title="Ver contas conectadas e atividades em tempo real"
+        >
+          <span className="pulse-indicator-dot"></span>
+          <Users size={16} />
+          <span className="btn-text">Online</span>
+        </button>
+
+        {/* Botão de Exportar Planilha */}
         <button
           onClick={onQuickExport}
           className="btn-header-export"
@@ -63,8 +90,46 @@ export default function Header({
           <FileSpreadsheet size={16} />
           <span className="btn-text">Exportar Planilha</span>
         </button>
+
+        {/* Identificação da Conta Ativa e Nível */}
+        <div className="user-profile-header-pill" onClick={onOpenUserModal} title="Clique para gerenciar ou alternar conta">
+          <div className="user-avatar-header">
+            {currentUser?.name?.charAt(0) || 'U'}
+          </div>
+          <div className="user-info-header">
+            <span className="user-name-header">{currentUser?.name}</span>
+            <span className={`user-role-header-badge ${roleInfo.badgeClass}`}>
+              {currentUser?.role === 'professor' && <Shield size={12} />}
+              {(currentUser?.role === 'verificador' || currentUser?.role === 'aluno_validador') && <GraduationCap size={12} />}
+              {(currentUser?.role === 'trainee' || currentUser?.role === 'aluno_treinamento') && <Clock size={12} />}
+              <span>{roleInfo.short}</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Atalho exclusivo de Gestão de Contas para Professores */}
+        {isProfessor() && (
+          <button
+            type="button"
+            onClick={onOpenAdminModal}
+            className="btn-header-admin"
+            title="Painel do Professor: Promover e gerenciar contas"
+          >
+            <Shield size={16} className="text-emerald" />
+            <span className="btn-text">Gestão</span>
+          </button>
+        )}
+
+        {/* Botão de Logout */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="btn-header-logout"
+          title="Sair da conta"
+        >
+          <LogOut size={16} />
+        </button>
       </div>
     </header>
   );
 }
-
