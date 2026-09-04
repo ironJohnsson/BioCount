@@ -85,9 +85,24 @@ router.post('/auth/login', async (req, res) => {
 
     const user = result.rows[0];
 
-    // Verificar hash da senha
-    if (user.password_hash && user.password_hash !== pHash) {
+    // Verificar senha (aceita hash SHA-256 ou texto puro caso inserido diretamente via SQL no Turso)
+    const matchesHash = user.password_hash === pHash;
+    const matchesPlain = user.password_hash === password;
+
+    if (user.password_hash && !matchesHash && !matchesPlain) {
       return res.status(401).json({ error: 'Senha incorreta. Tente novamente.' });
+    }
+
+    // Se a senha foi inserida em texto puro no banco, converte automaticamente para SHA-256
+    if (matchesPlain && !matchesHash) {
+      try {
+        await db.execute({
+          sql: 'UPDATE users SET password_hash = ? WHERE id = ?',
+          args: [pHash, user.id]
+        });
+      } catch (err) {
+        console.error('[BioCount] Aviso ao atualizar hash de senha:', err);
+      }
     }
 
     // Retornar usuário sem expor o hash da senha

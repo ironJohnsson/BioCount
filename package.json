@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "server": "node server/index.js",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "add:professor": "node server/scripts/add-professor.js"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",

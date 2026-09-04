@@ -31,7 +31,7 @@ export async function initDatabase() {
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL DEFAULT '',
-        role TEXT NOT NULL CHECK(role IN ('professor', 'verificador', 'trainee', 'aluno_validador', 'aluno_treinamento')),
+        role TEXT NOT NULL CHECK(lower(role) IN ('professor', 'verificador', 'trainee', 'aluno_validador', 'aluno_treinamento')),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
